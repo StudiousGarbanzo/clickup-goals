@@ -19,7 +19,26 @@
         "command": "clickup-goals.helloWorld",
         "title": "Hello World"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "clickup-goals-viewcontainer",
+          "title": "ClickUp™ Goals",
+          "icon": "media/clickup_logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "clickup-goals-viewcontainer": [
+        {
+          "id": "clickup-goals-view",
+          "name": "View",
+          "icon": "media/dep.svg",
+          "contextualTitle": "ClickUp™"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
