@@ -35,8 +35,9 @@ export class ClickUpGoalView implements vscode.WebviewViewProvider {
                 </head>
                 <body>
                     <h2>Authorization</h2>
-                    <p>You are not authorized to access ClickUp™ Goals. Please enter a Personal Access Token to gain access.</p><br>
+                    <p>ClickUp Goals is not authorized to access your ClickUp account. Please enter a Personal Access Token to gain access.</p><br>
                     <input type="text" class="text-input" placeholder="Personal Access Token">
+                    <button>Authorize</button>
                 </body>
             </html>
         `;
