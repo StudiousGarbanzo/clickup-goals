@@ -25,12 +25,18 @@ export class ClickUpGoalView implements vscode.WebviewViewProvider {
     } 
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
+        const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
+
         return `
             <!DOCTYPE html>
             <html lang="en">
+                <head>
+                    <link href="${styleVSCodeUri}" rel="stylesheet">
+                </head>
                 <body>
-                    <h2>LOL</h2><br>
-                    <input type="text" placeholder="Personal Access Token">
+                    <h2>Authorization</h2>
+                    <p>You are not authorized to access ClickUp™ Goals. Please enter a Personal Access Token to gain access.</p><br>
+                    <input type="text" class="text-input" placeholder="Personal Access Token">
                 </body>
             </html>
         `;
