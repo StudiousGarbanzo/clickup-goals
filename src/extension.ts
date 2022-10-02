@@ -1,13 +1,10 @@
 import * as vscode from 'vscode';
+import { ClickUpGoalView as ClickUpGoalViewProvider } from './ClickUpGoalViewProvider';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "clickup-goals" is now active!');
+	const view = new ClickUpGoalViewProvider(context.extensionUri);
 
-	let disposable = vscode.commands.registerCommand('clickup-goals.helloWorld', () => {
-		vscode.window.showInformationMessage('Hello World from ClickUp™ Goals!');
-	});
-
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider(ClickUpGoalViewProvider.viewType, view));
 }
 
 export function deactivate() {}
