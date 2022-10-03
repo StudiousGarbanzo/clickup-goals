@@ -78,7 +78,7 @@ button.secondary:hover {
 input:not([type='checkbox']),
 textarea {
 	display: block;
-	width: 100%;
+	width: 96.5%;
 	border: none;
 	font-family: var(--vscode-font-family);
 	padding: var(--input-padding-vertical) var(--input-padding-horizontal);

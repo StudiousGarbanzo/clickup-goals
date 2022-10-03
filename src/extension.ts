@@ -1,10 +1,14 @@
 import * as vscode from 'vscode';
-import { ClickUpGoalView as ClickUpGoalViewProvider } from './ClickUpGoalViewProvider';
+import { ClickUpGoalViewProvider } from './view';
 
 export function activate(context: vscode.ExtensionContext) {
-	const view = new ClickUpGoalViewProvider(context.extensionUri);
+	const view = new ClickUpGoalViewProvider(context.extensionUri, context);
+	const globalStateKeys: string[] = ["clickup.pat"];
 
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(ClickUpGoalViewProvider.viewType, view));
+	context.globalState.setKeysForSync(globalStateKeys);
+
+	context.globalState.update("clickup.pat", undefined); // DEBUG
 }
 
 export function deactivate() {}
