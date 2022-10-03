@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ClickUpGoalView as ClickUpGoalViewProvider } from './ClickUpGoalViewProvider';
+import { ClickUpGoalViewProvider } from './view';
 
 export function activate(context: vscode.ExtensionContext) {
 	const view = new ClickUpGoalViewProvider(context.extensionUri);
