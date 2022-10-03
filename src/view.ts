@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { isTokenValid } from './lib/api';
+import { isTokenValid, getTeams, Team } from './lib/api';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -47,7 +47,9 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
         let pat: string | null | undefined = this.context.globalState.get("clickup.pat");
         isTokenValid(pat).then(valid => {
             if (valid) {
-                webview.html = this._getAuthedHtml(webview, nonce, styleVSCodeUri, authedScriptUri);
+                this._getAuthedHtml(webview, nonce, pat!, styleVSCodeUri, authedScriptUri).then(str => {
+                    webview.html = str;
+                });
             } else {
                 webview.html = this._getAuthHtml(webview, nonce, styleVSCodeUri, authScriptUri);
             }
@@ -67,7 +69,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
         });
     }
 
-    private _getAuthedHtml(webview: vscode.Webview, nonce: string, css: vscode.Uri, js: vscode.Uri) {
+    private async _getAuthedHtml(webview: vscode.Webview, nonce: string, pat: string, css: vscode.Uri, js: vscode.Uri): Promise<string> {
         const fileUri = (fp: string) => {
             const fragments = fp.split('/');
     
@@ -78,7 +80,18 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
         const assetUri = (fp: string) => {
 			return webview.asWebviewUri(fileUri(fp));
 		};
+        const teams: Team[] = await getTeams(pat);
         let teamGoalsHtml: string = "";
+        for (const t of teams) {
+            teamGoalsHtml += `
+            <vscode-collapsible title="${t.name}" open class="subcollapse">
+                <div slot="body">
+                    hello
+                </div>
+            </vscode-collapsible>
+            `;
+            teamGoalsHtml += "\n";
+        }
         
         return `
             <!DOCTYPE html>
@@ -97,11 +110,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     <br>
                     <vscode-collapsible title="Goals" open class="collapsible">
                         <div slot="body">
-                        <vscode-collapsible title="Team 1" open class="subcollapse">
-                        <div slot="body">
-                            hello
-                        </div>
-                    </vscode-collapsible>
+                        ${teamGoalsHtml}
                         </div>
                     </vscode-collapsible>
                     <script src="${js}"></script>
