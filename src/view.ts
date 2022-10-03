@@ -38,7 +38,19 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     }
 
     public reloadHtml(): void {
-        this._view!.webview.html = this._getHtmlForWebview(this._view!.webview);
+        const webview = this._view!.webview;
+        const nonce = getNonce();
+        const authScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
+        const authedScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'authed.js'));
+        const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
+        let pat: string | null | undefined = this.context.globalState.get("clickup.pat");
+        isTokenValid(pat).then(valid => {
+            if (valid) {
+                webview.html = this._getAuthedHtml(webview, nonce, styleVSCodeUri, authedScriptUri);
+            } else {
+                webview.html = this._getAuthHtml(webview, nonce, styleVSCodeUri, authScriptUri);
+            }
+        });
     }
 
     private authorize(token: string) {
@@ -49,30 +61,43 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
             } else {
                 this.context.globalState.update("clickup.pat", token);
                 vscode.window.showInformationMessage("Logged in to ClickUp");
+                this.reloadHtml();
             }
-            // this.reloadHtml();
         });
     }
 
-    private _getHtmlForWebview(webview: vscode.Webview): string {
-        const nonce = getNonce();
-        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
-        const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
-
+    private _getAuthedHtml(webview: vscode.Webview, nonce: string, css: vscode.Uri, js: vscode.Uri) {
         return `
             <!DOCTYPE html>
             <html lang="en">
                 <head>
 				    <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
-                    <link href="${styleVSCodeUri}" rel="stylesheet">
+                    <link href="${css}" rel="stylesheet">
+                </head>
+                <body>
+                    <h2>lmao xd</h2>
+                    <script nonce="${nonce}" src="${js}"></script>
+                </body>
+            </html>
+        `;
+    }
+
+    private _getAuthHtml(webview: vscode.Webview, nonce: string, css: vscode.Uri, js: vscode.Uri): string {
+        return `
+            <!DOCTYPE html>
+            <html lang="en">
+                <head>
+				    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                    <link href="${css}" rel="stylesheet">
                 </head>
                 <body>
                     <h2>Authorization</h2>
                     <p>ClickUp Goals is not authorized to access your ClickUp account. Please enter a Personal Access Token to gain access.</p><br>
                     <input type="text" id="pat-input" class="text-input" placeholder="Personal Access Token">
                     <button class="authorize-button">Authorize</button>
-                    <script nonce="${nonce}" src="${scriptUri}"></script>
+                    <script nonce="${nonce}" src="${js}"></script>
                 </body>
             </html>
         `;

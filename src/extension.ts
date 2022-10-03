@@ -7,6 +7,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(ClickUpGoalViewProvider.viewType, view));
 	context.globalState.setKeysForSync(globalStateKeys);
+
+	context.globalState.update("clickup.pat", undefined); // DEBUG
 }
 
 export function deactivate() {}

@@ -1,6 +1,10 @@
 import fetch from 'node-fetch';
 
-export async function isTokenValid(token: string) : Promise<boolean> {
+export async function isTokenValid(token: any) : Promise<boolean> {
+    if (!token) {
+        return false;
+    }
+
     const headersList = {
         "Authorization": token
     };
