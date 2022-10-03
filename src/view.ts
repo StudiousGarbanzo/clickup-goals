@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { isTokenValid } from './lib/api';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
@@ -17,7 +18,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
 				this._extensionUri
 			]
 		};
-        this.reloadHtml();
+        this.reloadAll();
         webviewView.webview.onDidReceiveMessage(
             message => {
               switch (message.command) {
@@ -28,7 +29,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     this.authorize(message.token);
                     return;
                 case 'reload':
-                    this.reloadHtml();
+                    this.reloadAll();
                     return;
               }
             },
@@ -37,7 +38,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
           );
     }
 
-    public reloadHtml(): void {
+    public reloadAll(): void {
         const webview = this._view!.webview;
         const nonce = getNonce();
         const authScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
@@ -61,23 +62,50 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
             } else {
                 this.context.globalState.update("clickup.pat", token);
                 vscode.window.showInformationMessage("Logged in to ClickUp");
-                this.reloadHtml();
+                this.reloadAll();
             }
         });
     }
 
     private _getAuthedHtml(webview: vscode.Webview, nonce: string, css: vscode.Uri, js: vscode.Uri) {
+        const fileUri = (fp: string) => {
+            const fragments = fp.split('/');
+    
+            return vscode.Uri.file(
+                path.join(this.context.extensionPath, ...fragments)
+            );
+        };
+        const assetUri = (fp: string) => {
+			return webview.asWebviewUri(fileUri(fp));
+		};
+        let teamGoalsHtml: string = "";
+        
         return `
             <!DOCTYPE html>
             <html lang="en">
                 <head>
 				    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';"> -->
                     <link href="${css}" rel="stylesheet">
+                    <link rel="stylesheet" href="${assetUri('node_modules/vscode-codicons/dist/codicon.css')}" id="vscode-codicon-stylesheet">
                 </head>
                 <body>
-                    <h2>lmao xd</h2>
-                    <script nonce="${nonce}" src="${js}"></script>
+                    <h2>ClickUp</h2>
+                    <br>
+                    <button class="refresh-button">Refresh</button>
+                    <br>
+                    <br>
+                    <vscode-collapsible title="Goals" open class="collapsible">
+                        <div slot="body">
+                        <vscode-collapsible title="Team 1" open class="subcollapse">
+                        <div slot="body">
+                            hello
+                        </div>
+                    </vscode-collapsible>
+                        </div>
+                    </vscode-collapsible>
+                    <script src="${js}"></script>
+                    <script src="${assetUri('node_modules/@bendera/vscode-webview-elements/dist/bundled.js')}" type="module"></script>
                 </body>
             </html>
         `;
