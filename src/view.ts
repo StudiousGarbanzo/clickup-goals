@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { isTokenValid, getTeams, Team } from './lib/api';
+import { isTokenValid, getTeams, Team, getGoals, Goal } from './lib/api';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -83,10 +83,30 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
         const teams: Team[] = await getTeams(pat);
         let teamGoalsHtml: string = "";
         for (const t of teams) {
+            const goals: Goal[] = await getGoals(pat, t.id);
+            let goalsHtml: string = `                
+            `;
+            if (goals.length === 0) {
+                goalsHtml += "\n";
+                goalsHtml += `
+                <p>No goals yet</p>
+                `;
+            } else {
+                for (const goal of goals) {
+                    goalsHtml += `
+                    <vscode-collapsible title="${goal.name}" class="collapsible">
+                        <div slot="body" style="width:95%;float:right">
+                            ${goal.description}
+                        </div>
+                    </vscode-collapsible>
+                    `;
+                    goalsHtml += "\n";
+                }
+            }
             teamGoalsHtml += `
-            <vscode-collapsible title="${t.name}" open class="subcollapse">
-                <div slot="body">
-                    hello
+            <vscode-collapsible title="${t.name}" class="subcollapse">
+                <div slot="body" style="width:95%;float:right">
+                    ${goalsHtml}
                 </div>
             </vscode-collapsible>
             `;
@@ -109,7 +129,8 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     <br>
                     <br>
                     <vscode-collapsible title="Goals" open class="collapsible">
-                        <div slot="body">
+                        <div slot="body" style="width:95%;float:right">
+                        <button id="add-goal-button" style="margin:3px;width:95%">Create New Goal</button>
                         ${teamGoalsHtml}
                         </div>
                     </vscode-collapsible>

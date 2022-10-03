@@ -53,12 +53,11 @@ export async function getTeams(token: any): Promise<Team[]> {
     return teams;
 }
 
-export async function getGoals(token: any, teamId: number): Promise<Goal[]> {
+export async function getGoals(token: string, teamId: string): Promise<Goal[]> {
     const goals: Goal[] = [];
 
-    const teamid = teamId;
     const resp = await fetch(
-        `https://api.clickup.com/api/v2/team/${teamid}/goal`,
+        `https://api.clickup.com/api/v2/team/${teamId}/goal`,
         {
             method: 'GET',
             headers: {
@@ -69,8 +68,7 @@ export async function getGoals(token: any, teamId: number): Promise<Goal[]> {
 
     const data = JSON.parse(await resp.text());
     
-    let i = 0;
-    for (let goal: any = data.teams[i]; i < data.teams.length; i++) {
+    for (const goal of data.goals) {
         const final: Goal = {
             id: goal.id,
             prettyId: goal.pretty_id,
