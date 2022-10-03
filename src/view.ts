@@ -42,13 +42,16 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     }
 
     private authorize(token: string) {
-        if (!isTokenValid(token)) {
-            vscode.window.showErrorMessage("Invalid Personal Access Token");
-            return;
-        }
-        this.context.globalState.update("clickup.pat", token);
-        vscode.window.showInformationMessage("Logged in to ClickUp");
-        this.reloadHtml();
+        isTokenValid(token).then(valid => {
+            if (!valid) {
+                vscode.window.showErrorMessage("Invalid Personal Access Token");
+                return;
+            } else {
+                this.context.globalState.update("clickup.pat", token);
+                vscode.window.showInformationMessage("Logged in to ClickUp");
+            }
+            // this.reloadHtml();
+        });
     }
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
