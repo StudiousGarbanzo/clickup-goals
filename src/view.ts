@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { isTokenValid } from './lib/api';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -21,14 +22,25 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
             message => {
               switch (message.command) {
                 case 'info':
-                  vscode.window.showInformationMessage(message.text);
-                  return;
+                    vscode.window.showInformationMessage(message.text);
+                    return;
+                case 'authorize':
+                    this.authorize(message.token);
+                    return;
               }
             },
             undefined,
             this.context.subscriptions
           );
     } 
+
+    private authorize(token: string) {
+        if (!isTokenValid(token)) {
+            vscode.window.showErrorMessage("Invalid Personal Access Token");
+            return;
+        }
+        vscode.window.showInformationMessage("Logged in to ClickUp");
+    }
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
         const nonce = getNonce();
