@@ -5,7 +5,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
 
 	private _view?: vscode.WebviewView;
 
-    constructor(private readonly _extensionUri: vscode.Uri) { }
+    constructor(private readonly _extensionUri: vscode.Uri, private readonly context: vscode.ExtensionContext) { }
 
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
         this._view = webviewView;
@@ -17,11 +17,17 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
 			]
 		};
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-        webviewView.webview.onDidReceiveMessage(data => {
-			switch (data.type) {
-				// TODO
-			}
-		});
+        webviewView.webview.onDidReceiveMessage(
+            message => {
+              switch (message.command) {
+                case 'info':
+                  vscode.window.showInformationMessage(message.text);
+                  return;
+              }
+            },
+            undefined,
+            this.context.subscriptions
+          );
     } 
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
@@ -33,15 +39,15 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
             <!DOCTYPE html>
             <html lang="en">
                 <head>
-                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 				    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
                     <link href="${styleVSCodeUri}" rel="stylesheet">
                 </head>
                 <body>
                     <h2>Authorization</h2>
                     <p>ClickUp Goals is not authorized to access your ClickUp account. Please enter a Personal Access Token to gain access.</p><br>
-                    <input type="text" class="text-input" placeholder="Personal Access Token">
-                    <button onclick="authorize()">Authorize</button>
+                    <input type="text" id="pat-input" class="text-input" placeholder="Personal Access Token">
+                    <button class="authorize-button">Authorize</button>
                     <script nonce="${nonce}" src="${scriptUri}"></script>
                 </body>
             </html>

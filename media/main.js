@@ -1,12 +1,22 @@
-//@ts-check
-
-// This script will be run within the webview itself
-// It cannot access the main VS Code APIs directly.
 (function () {
     // @ts-ignore
     const vscode = acquireVsCodeApi();
 
+    vscode.postMessage({
+        command: 'info',
+        text: 'LOLOLOL'
+    });
+
+    // @ts-ignore
+    document.querySelector(".authorize-button").addEventListener("click", () => {
+        vscode.postMessage({
+            command: 'info',
+            text: 'LOLOLOL'
+        });
+        authorize();
+    });
+
     function authorize() {
-        vscode.window.showInformationMessage("Authorized");
+        document.getElementById("pat-input").value = "";
     }
-}());
+}());   
