@@ -10,15 +10,15 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:clickup-goals.helloWorld",
+    "onCommand:clickup-goals.newGoal",
     "onView:clickup-goals-view"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "clickup-goals.helloWorld",
-        "title": "Hello World"
+        "command": "clickup-goals.newGoal",
+        "title": "Create New Goal"
       }
     ],
     "viewsContainers": {
