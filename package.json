@@ -10,15 +10,15 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:clickup-goals.helloWorld",
+    "onCommand:clickup-goals.newGoal",
     "onView:clickup-goals-view"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "clickup-goals.helloWorld",
-        "title": "Hello World"
+        "command": "clickup-goals.newGoal",
+        "title": "Create New Goal"
       }
     ],
     "viewsContainers": {
@@ -69,7 +69,9 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
+    "@bendera/vscode-webview-elements": "^0.7.0",
     "@vscode/webview-ui-toolkit": "^1.1.0",
-    "node-fetch": "^3.2.10"
+    "node-fetch": "^3.2.10",
+    "vscode-codicons": "^0.0.17"
   }
 }

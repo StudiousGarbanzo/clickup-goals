@@ -91,3 +91,28 @@ input::placeholder,
 textarea::placeholder {
 	color: var(--vscode-input-placeholderForeground);
 }
+
+vscode-collapsible p {
+	font-size: var(--vscode-font-size);
+	margin: 10px;
+}
+
+.collapsible ul {
+	display: flex;
+	margin: 0;
+	padding: 0;
+  }
+  
+  .collapsible li {
+	align-items: center;
+	display: flex;
+	height: 22px;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	width: 28px;
+  }
+
+  .subcollapse {
+	margin-left: 10;
+  }
