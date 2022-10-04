@@ -13,7 +13,8 @@ export function activate(context: vscode.ExtensionContext) {
         if (currentPanel) {
             currentPanel.reveal(columnToShowIn);
           } else {
-            currentPanel = vscode.window.createWebviewPanel('createGoal', 'Create New Goal', columnToShowIn!, {
+            currentPanel = vscode.window.createWebviewPanel('createGoal', 'ClickUp: Create New Goal', columnToShowIn!, {
+                enableScripts: true
             });
 
             const styleVSCodeUri = currentPanel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vscode.css'));
@@ -26,11 +27,29 @@ export function activate(context: vscode.ExtensionContext) {
                     <link href="${styleVSCodeUri}" rel="stylesheet">
                 </head>
                 <body>
-                    <h2>Create New ClickUp Goal</h2>
+                    <br><br>
+                    <h1>Create New ClickUp Goal</h1>
                     <br>
-                    <button class="create-button">Create</button>
+                    <div style="width:95%">
+                        <input type="text" id="goal-name" placeholder="Name">
+                        <br>
+                        <textarea placeholder="Description" id="goal-description"></textarea>
+                        <br>
+                        <label for="goal-color"><b>Color</b></label>
+                        <input type="color" id="goal-color" name = "goal-color" value="#00FF00" style="width:97.5%">
+                        <br>
+                        <label for="goal-date"><b>Due Date</b></label>
+                        <input type="date" name="goal-date" id="goal-date">
+                        <br>
+                        <button class="create-button" style="width:97.25%">Create</button>
+                    </div>
                     <br>
-                    <br>
+                <script>
+                    (function() {
+                        const vscode = acquireVsCodeApi();
+                        document.getElementById("goal-date").valueAsDate = new Date();
+                    }());
+                </script>
                 </body>
             </html>
             `;
