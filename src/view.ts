@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { isTokenValid, getTeams, Team, getGoals, Goal } from './lib/api';
+import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal } from './lib/api';
+import { timestampToString } from './lib/date';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -30,6 +31,19 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     return;
                 case 'reload':
                     this.reloadAll();
+                    return;
+                case 'goalUpdate':
+                    updateGoal(
+                        this.context.globalState.get("clickup.pat")!,
+                        message.goalId,
+                        message.name,
+                        message.desc,
+                        message.color,
+                        message.date
+                    ).then((thing) => {
+                        // vscode.window.showInformationMessage(thing); // DEBUG
+                        this.reloadAll();
+                    });
                     return;
               }
             },
@@ -96,7 +110,17 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     goalsHtml += `
                     <vscode-collapsible title="${goal.name}" class="collapsible">
                         <div slot="body" style="width:95%;float:right">
-                            ${goal.description}
+                            <span>Name: <input type="text" style="width:90%" id="NAME-${goal.id}" value="${goal.name}" </span><br>
+                            <span>Description:</span>
+                            <textarea id="DESC-${goal.id}" style="width:90%" name="w3review">${goal.description}</textarea><br>
+                            <span>Color:</span>
+                            <input type="color" id="COLOR-${goal.id}" class="color-pickers" value="${goal.color}" style="width:90%"><br>
+                            <span>Date of Completion:</span>
+                            <input type="date" id="DATE-${goal.id}" value="${timestampToString(goal.dueDate)}">
+                            <br>
+                            <span>Percentage Completed: ${goal.percentCompleted}</span>
+                            <br>
+                            <button id="BTN-${goal.id}" class="save-buttons">Save Changes</button>
                         </div>
                     </vscode-collapsible>
                     `;
