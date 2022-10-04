@@ -45,6 +45,10 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                         this.reloadAll();
                     });
                     return;
+                case 'logout':
+                    this.context.globalState.update("clickup.pat", "");
+                    this.reloadAll();
+                    return;
               }
             },
             undefined,
@@ -53,7 +57,10 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     }
 
     public reloadAll(): void {
-        const webview = this._view!.webview;
+        if (!this._view) {
+            return;
+        }
+        const webview = this._view.webview;
         const nonce = getNonce();
         const authScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
         const authedScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'authed.js'));
@@ -158,6 +165,9 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                         ${teamGoalsHtml}
                         </div>
                     </vscode-collapsible>
+                    <br>
+                    <br>
+                    <button class="logout-button">Logout</button>
                     <script src="${js}"></script>
                     <script src="${assetUri('node_modules/@bendera/vscode-webview-elements/dist/bundled.js')}" type="module"></script>
                 </body>

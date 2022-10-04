@@ -12,6 +12,12 @@
         });
     });
 
+    document.querySelector(".logout-button").addEventListener("click", () => {
+        vscode.postMessage({
+            command: 'logout'
+        });
+    });
+
     const goalSaveButtons = document.querySelectorAll(".save-buttons");
     for (let button of goalSaveButtons) {
         button.addEventListener('click', () => {
