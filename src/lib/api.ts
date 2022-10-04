@@ -22,12 +22,35 @@ export interface Goal {
     prettyId: string,
     name: string,
     color: string,
-    description: string
+    description: string,
+    dueDate: string,
+    percentCompleted: number
 }
 
 export interface Team {
     id: string,
     name: string,
+}
+
+export async function updateGoal(token: any, goalId: string, name: string, desc: string, color: string, date: number): Promise<string> {
+    let headersList = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    };
+    const bodyJson = JSON.stringify({
+        name: name,
+        due_date: date,
+        description: desc,
+        rem_owners: [],
+        add_owners: [],
+        color: color
+    });
+    const resp = await fetch(`https://api.clickup.com/api/v2/goal/${goalId}`, {
+        method: "PUT",
+        headers: headersList,
+        body: bodyJson
+    });
+    return `${resp.status} ${await resp.text()} ${bodyJson}`;
 }
 
 export async function getTeams(token: any): Promise<Team[]> {
@@ -74,9 +97,15 @@ export async function getGoals(token: string, teamId: string): Promise<Goal[]> {
             prettyId: goal.pretty_id,
             name: goal.name,
             description: goal.description,
-            color: goal.color
+            color: goal.color,
+            dueDate: goal.due_date,
+            percentCompleted: goal.percent_completed,
         };
         goals.push(final);
     }
     return goals;
+}
+
+export function updateColor(goalId: string, color: string) {
+
 }
