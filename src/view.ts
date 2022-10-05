@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal } from './lib/api';
 import { timestampToString } from './lib/date';
+import { createGoalView } from './extension';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -48,6 +49,9 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                 case 'logout':
                     this.context.globalState.update("clickup.pat", "");
                     this.reloadAll();
+                    return;
+                case 'newgoal':
+                    createGoalView();
                     return;
               }
             },
@@ -161,7 +165,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     <br>
                     <vscode-collapsible title="Goals" open class="collapsible">
                         <div slot="body" style="width:95%;float:right">
-                        <button id="add-goal-button" style="margin:3px;width:95%">Create New Goal</button>
+                        <button class="add-goal-button" style="margin:3px;width:95%">Create New Goal</button>
                         ${teamGoalsHtml}
                         </div>
                     </vscode-collapsible>

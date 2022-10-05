@@ -2,6 +2,9 @@ import * as vscode from 'vscode';
 import { createGoal, getTeams, getUserId, isTokenValid } from './lib/api';
 import { ClickUpGoalViewProvider } from './view';
 
+
+export let createGoalView: () => void = () => {};
+
 export function activate(context: vscode.ExtensionContext) {
     const view = new ClickUpGoalViewProvider(context.extensionUri, context);
     const globalStateKeys: string[] = ["clickup.pat"];
@@ -9,7 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
     let currentPanel: vscode.WebviewPanel | undefined = undefined;
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(ClickUpGoalViewProvider.viewType, view));
     context.globalState.setKeysForSync(globalStateKeys);
-    context.subscriptions.push(vscode.commands.registerCommand("clickup-goals.newGoal", () => {
+    createGoalView = () => {
         const columnToShowIn = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
         if (currentPanel) {
             currentPanel.reveal(columnToShowIn);
@@ -119,7 +122,8 @@ export function activate(context: vscode.ExtensionContext) {
                 context.subscriptions
             );
         }
-    }));
+    };
+    context.subscriptions.push(vscode.commands.registerCommand("clickup-goals.newGoal", createGoalView));
 }
 
 export function deactivate() { }
