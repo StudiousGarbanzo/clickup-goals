@@ -116,7 +116,7 @@ export async function getUserId(token: any): Promise<number> {
             headers: headersList
         }
     );
-    return JSON.parse(await resp.text()).id;
+    return JSON.parse(await resp.text()).user.id;
 }
 
 export async function createGoal(token:any, teamId: string, name: string, dueDate: number, desc: string, userId: number, color: string): Promise<void> {

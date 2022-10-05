@@ -96,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
                 const token = context.globalState.get("clickup.pat");
                 switch (message.command) {
                     case "create":
-                        getUserId(null).then(userId => {
+                        getUserId(token).then(userId => {
                             createGoal(
                                 token,
                                 message.teamId,
@@ -107,7 +107,18 @@ export function activate(context: vscode.ExtensionContext) {
                                 message.color
                             ).then(() => {
                                 view.reloadAll();
-                                reload();
+                                currentPanel!.webview.html = `
+                                <!DOCTYPE html>
+                    <html lang="en">
+                        <head>
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <link href="${styleVSCodeUri}" rel="stylesheet">
+                        </head>
+                        <body>
+                            <br><br>
+                            <h1>Success</h1>
+                        </body>
+                    </html>`;
                             });
                         });
                         return;

@@ -159,6 +159,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                 </head>
                 <body>
                     <h2>ClickUp</h2>
+                    <p>Note: If a goal does not appear, please press Refresh</p>
                     <br>
                     <button class="refresh-button">Refresh</button>
                     <br>
