@@ -72,7 +72,6 @@ export async function getTeams(token: any): Promise<Team[]> {
         });
     }
 
-    // TODO
     return teams;
 }
 
@@ -120,7 +119,7 @@ export async function getUserId(token: any): Promise<number> {
     return JSON.parse(await resp.text()).id;
 }
 
-export async function addGoal(token:any, teamId: string, name: string, dueDate: number, desc: string, userId: number, color: string): Promise<void> {
+export async function createGoal(token:any, teamId: string, name: string, dueDate: number, desc: string, userId: number, color: string): Promise<void> {
     let headersList = {
         "Content-Type": "application/json",
         "Authorization": token
