@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal } from './lib/api';
 import { timestampToString } from './lib/date';
+import { createGoalView } from './extension';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -45,6 +46,13 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                         this.reloadAll();
                     });
                     return;
+                case 'logout':
+                    this.context.globalState.update("clickup.pat", "");
+                    this.reloadAll();
+                    return;
+                case 'newgoal':
+                    createGoalView();
+                    return;
               }
             },
             undefined,
@@ -53,7 +61,10 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     }
 
     public reloadAll(): void {
-        const webview = this._view!.webview;
+        if (!this._view) {
+            return;
+        }
+        const webview = this._view.webview;
         const nonce = getNonce();
         const authScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
         const authedScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'authed.js'));
@@ -148,16 +159,20 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                 </head>
                 <body>
                     <h2>ClickUp</h2>
+                    <p>Note: If a goal does not appear, please press Refresh</p>
                     <br>
                     <button class="refresh-button">Refresh</button>
                     <br>
                     <br>
                     <vscode-collapsible title="Goals" open class="collapsible">
                         <div slot="body" style="width:95%;float:right">
-                        <button id="add-goal-button" style="margin:3px;width:95%">Create New Goal</button>
+                        <button class="add-goal-button" style="margin:3px;width:95%">Create New Goal</button>
                         ${teamGoalsHtml}
                         </div>
                     </vscode-collapsible>
+                    <br>
+                    <br>
+                    <button class="logout-button">Logout</button>
                     <script src="${js}"></script>
                     <script src="${assetUri('node_modules/@bendera/vscode-webview-elements/dist/bundled.js')}" type="module"></script>
                 </body>

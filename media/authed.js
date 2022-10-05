@@ -12,6 +12,18 @@
         });
     });
 
+    document.querySelector(".logout-button").addEventListener("click", () => {
+        vscode.postMessage({
+            command: 'logout'
+        });
+    });
+
+    document.querySelector(".add-goal-button").addEventListener("click", () => {
+        vscode.postMessage({
+            command: 'newgoal'
+        });
+    });
+
     const goalSaveButtons = document.querySelectorAll(".save-buttons");
     for (let button of goalSaveButtons) {
         button.addEventListener('click', () => {

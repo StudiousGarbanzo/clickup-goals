@@ -72,7 +72,6 @@ export async function getTeams(token: any): Promise<Team[]> {
         });
     }
 
-    // TODO
     return teams;
 }
 
@@ -106,6 +105,35 @@ export async function getGoals(token: string, teamId: string): Promise<Goal[]> {
     return goals;
 }
 
-export function updateColor(goalId: string, color: string) {
+export async function getUserId(token: any): Promise<number> {
+    let headersList = {
+        "Authorization": token
+    };
+    const resp = await fetch(
+        `https://api.clickup.com/api/v2/user`,
+        {
+            method: 'GET',
+            headers: headersList
+        }
+    );
+    return JSON.parse(await resp.text()).user.id;
+}
 
+export async function createGoal(token:any, teamId: string, name: string, dueDate: number, desc: string, userId: number, color: string): Promise<void> {
+    let headersList = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    };
+    await fetch(`https://api.clickup.com/api/v2/team/${teamId}/goal`, {
+        method: "POST",
+        headers: headersList,
+        body: JSON.stringify({
+            name: name,
+            due_date: dueDate,
+            description: desc,
+            multiple_owners: true,
+            owners: [userId],
+            color: color,
+        })
+    });
 }
