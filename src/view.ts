@@ -132,7 +132,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                                     <label class="aswitch">
                                         <input type="checkbox" id="CHECKKR-${keyResult.id}" name="CHECKKR-${keyResult.id}">
                                         <span class="aslider around"></span>
-                                    </label>
+                                    </label><br>
                                     `;
                                     break;
                                 case "number":
@@ -141,7 +141,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                                     specificKeyResultHtml += `<p>Start: ${keyResult.startSteps} ${unit}</p>`;
                                     specificKeyResultHtml += `<p>Target: ${keyResult.endSteps} ${unit}</p>`;
                                     specificKeyResultHtml += `
-                                    <p>Current:-</p> <input type="number" min="${keyResult.startSteps}" max="${keyResult.endSteps}" value="${keyResult.startSteps}" id="NUMKR-${keyResult.id}">
+                                    <p>Current: <input type="number" min="${keyResult.startSteps}" max="${keyResult.endSteps}" style="display: block-inline; width: 50%" value="${keyResult.startSteps}" id="NUMKR-${keyResult.id}"></p>
                                     `;
                                     break;
                             }
@@ -149,7 +149,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                         <vscode-collapsible title="${keyResult.name}" class="collapsible">
                             <div slot="body" style="width:95%;float:right">
                                 ${specificKeyResultHtml}
-                                <br><br>
+                                <br>
                                 <button id="BTN-${keyResult.id}" class="save-buttons-kr ${keyResult.type}" style="width:95%">Save Target Changes</button><br><br>
                             </div>
                         </vscode-collapsible>
@@ -163,7 +163,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                             <span>Date of Completion:</span>
                             <input type="date" id="DATE-${goal.id}" value="${timestampToString(goal.dueDate)}">
                             <br>
-                            <span>Percentage Completed: ${goal.percentCompleted}</span>
+                            <span>Percentage Completed: ${goal.percentCompleted}%</span>
                             <br>
                             ${keyResultsHtml}
                             <br>
