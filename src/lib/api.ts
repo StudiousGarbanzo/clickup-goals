@@ -45,16 +45,21 @@ export interface Team {
     name: string,
 }
 
-export async function updateKeyResult(token: any, keyResultId: string, steps: number, name: string) {
+export async function updateKeyResult(token: any, keyResultId: string, steps: number): Promise<string> {
     let headersList = {
         "Content-Type": "application/json",
         "Authorization": token
     };
     const bodyJson = JSON.stringify({
         steps_current: steps,
-        note: "Update steps",
-        name: name
+        note: "Update steps"
     });
+    const resp = await fetch(`https://api.clickup.com/api/v2/key_result/${keyResultId}`, {
+        method: "PUT",
+        headers: headersList,
+        body: bodyJson
+    });
+    return `${await resp.text()} LOL ${bodyJson} LOL ${resp.status}`;
 }
 
 export async function updateGoal(token: any, goalId: string, name: string, desc: string, color: string, date: number): Promise<string> {

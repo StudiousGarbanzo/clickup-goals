@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal } from './lib/api';
+import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal, updateKeyResult } from './lib/api';
 import { timestampToString } from './lib/date';
 import { createGoalView } from './extension';
 
@@ -43,6 +43,16 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                         message.date
                     ).then((thing) => {
                         // vscode.window.showInformationMessage(thing); // DEBUG
+                        this.reloadAll();
+                    });
+                    return;
+                case 'keyResultUpdate':
+                    updateKeyResult(
+                        this.context.globalState.get("clickup.pat")!,
+                        message.keyResultId,
+                        message.currentSteps
+                    ).then((thing) => {
+                        vscode.window.showInformationMessage(thing); // DEBUG
                         this.reloadAll();
                     });
                     return;
@@ -130,7 +140,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                                     specificKeyResultHtml += `
                                     Complete:
                                     <label class="aswitch">
-                                        <input type="checkbox" id="CHECKKR-${keyResult.id}" name="CHECKKR-${keyResult.id}">
+                                        <input type="checkbox" ${keyResult.currentSteps === 1 ? "checked": ""} id="CHECKKR-${keyResult.id}" name="CHECKKR-${keyResult.id}">
                                         <span class="aslider around"></span>
                                     </label><br>
                                     `;
@@ -141,7 +151,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                                     specificKeyResultHtml += `<p>Start: ${keyResult.startSteps} ${unit}</p>`;
                                     specificKeyResultHtml += `<p>Target: ${keyResult.endSteps} ${unit}</p>`;
                                     specificKeyResultHtml += `
-                                    <p>Current: <input type="number" min="${keyResult.startSteps}" max="${keyResult.endSteps}" style="display: block-inline; width: 50%" value="${keyResult.startSteps}" id="NUMKR-${keyResult.id}"></p>
+                                    <p>Current: <input type="number" min="${keyResult.startSteps}" max="${keyResult.endSteps}" style="display: block-inline; width: 50%" value="${keyResult.currentSteps}" id="NUMKR-${keyResult.id}"></p>
                                     `;
                                     break;
                             }
@@ -163,7 +173,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                             <span>Date of Completion:</span>
                             <input type="date" id="DATE-${goal.id}" value="${timestampToString(goal.dueDate)}">
                             <br>
-                            <span>Percentage Completed: ${goal.percentCompleted}%</span>
+                            <span>Percentage Completed: ${Math.round(goal.percentCompleted * 1000)/10.0}%</span>
                             <br>
                             ${keyResultsHtml}
                             <br>
