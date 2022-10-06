@@ -45,6 +45,18 @@ export interface Team {
     name: string,
 }
 
+export async function updateKeyResult(token: any, keyResultId: string, steps: number, name: string) {
+    let headersList = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    };
+    const bodyJson = JSON.stringify({
+        steps_current: steps,
+        note: "Update steps",
+        name: name
+    });
+}
+
 export async function updateGoal(token: any, goalId: string, name: string, desc: string, color: string, date: number): Promise<string> {
     let headersList = {
         "Content-Type": "application/json",
