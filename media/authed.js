@@ -42,4 +42,22 @@
             });
         });
     }
-}());   
+
+    const keyResultSaveButtons = document.querySelectorAll(".save-buttons-kr");
+    for (let keyResultSaveButton of keyResultSaveButtons) {
+        const keyResultId = keyResultSaveButton.id.substring(4);
+        keyResultSaveButton.addEventListener('click', () => {
+            let newVal = 0;
+            if (keyResultSaveButton.classList.contains("boolean")) {
+                newVal = (document.getElementById(`CHECKKR-${keyResultId}`).checked) ? 1 : 0;
+            } else if (keyResultSaveButton.classList.contains("currency") || keyResultSaveButton.classList.contains("number")) {
+                newVal = document.getElementById(`NUMKR-${keyResultId}`).value;
+            }
+            vscode.postMessage({
+                command: 'keyResultUpdate',
+                keyResultId: keyResultId,
+                currentSteps: newVal
+            });
+        });
+    }
+}());

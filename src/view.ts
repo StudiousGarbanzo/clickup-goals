@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal } from './lib/api';
+import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal, updateKeyResult } from './lib/api';
 import { timestampToString } from './lib/date';
 import { createGoalView } from './extension';
 
@@ -43,6 +43,16 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                         message.date
                     ).then((thing) => {
                         // vscode.window.showInformationMessage(thing); // DEBUG
+                        this.reloadAll();
+                    });
+                    return;
+                case 'keyResultUpdate':
+                    updateKeyResult(
+                        this.context.globalState.get("clickup.pat")!,
+                        message.keyResultId,
+                        message.currentSteps
+                    ).then((thing) => {
+                        vscode.window.showInformationMessage(thing); // DEBUG
                         this.reloadAll();
                     });
                     return;
@@ -118,20 +128,61 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                 `;
             } else {
                 for (const goal of goals) {
+                    let keyResultsHtml = "";
+                    if (goal.keyResults.length === 0) {
+                        keyResultsHtml += "<h3>No Targets</h3>";
+                    } else {
+                        keyResultsHtml += `<h3>Targets</h3>`;
+                        for (const keyResult of goal.keyResults) {
+                            let specificKeyResultHtml = ``;
+                            switch (keyResult.type) { // TODO: more interactive
+                                case "boolean":
+                                    specificKeyResultHtml += `
+                                    Complete:
+                                    <label class="aswitch">
+                                        <input type="checkbox" ${keyResult.currentSteps === 1 ? "checked": ""} id="CHECKKR-${keyResult.id}" name="CHECKKR-${keyResult.id}">
+                                        <span class="aslider around"></span>
+                                    </label><br>
+                                    `;
+                                    break;
+                                case "number":
+                                case "currency":
+                                    const unit: string = keyResult.unit ? keyResult.unit : "";
+                                    specificKeyResultHtml += `<p>Start: ${keyResult.startSteps} ${unit}</p>`;
+                                    specificKeyResultHtml += `<p>Target: ${keyResult.endSteps} ${unit}</p>`;
+                                    specificKeyResultHtml += `
+                                    <p>Current: <input type="number" min="${keyResult.startSteps}" max="${keyResult.endSteps}" style="display: block-inline; width: 50%" value="${keyResult.currentSteps}" id="NUMKR-${keyResult.id}"></p>
+                                    `;
+                                    break;
+                            }
+                            keyResultsHtml +=`
+                        <vscode-collapsible title="${keyResult.name}" class="collapsible">
+                            <div slot="body" style="width:95%;float:right">
+                                ${specificKeyResultHtml}
+                                <br>
+                                <button id="BTN-${keyResult.id}" class="save-buttons-kr ${keyResult.type}" style="width:95%">Save Target Changes</button><br><br>
+                            </div>
+                        </vscode-collapsible>
+                            `;
+                        }
+                    }
                     goalsHtml += `
                     <vscode-collapsible title="${goal.name}" class="collapsible">
                         <div slot="body" style="width:95%;float:right">
                             <span>Name: <input type="text" style="width:90%" id="NAME-${goal.id}" value="${goal.name}" </span><br>
+                            <span>Date of Completion:</span>
+                            <input type="date" id="DATE-${goal.id}" value="${timestampToString(goal.dueDate)}">
+                            <br>
+                            <span>Percentage Completed: ${Math.round(goal.percentCompleted * 1000)/10.0}%</span>
+                            <br>
+                            ${keyResultsHtml}
+                            <br>
                             <span>Description:</span>
                             <textarea id="DESC-${goal.id}" style="width:90%" name="w3review">${goal.description}</textarea><br>
                             <span>Color:</span>
                             <input type="color" id="COLOR-${goal.id}" class="color-pickers" value="${goal.color}" style="width:90%"><br>
-                            <span>Date of Completion:</span>
-                            <input type="date" id="DATE-${goal.id}" value="${timestampToString(goal.dueDate)}">
-                            <br>
-                            <span>Percentage Completed: ${goal.percentCompleted}</span>
-                            <br>
-                            <button id="BTN-${goal.id}" class="save-buttons">Save Changes</button>
+                            <button id="BTN-${goal.id}" class="save-buttons" style="width:95%">Save Goal Changes</button>
+                            <br><br>
                         </div>
                     </vscode-collapsible>
                     `;
