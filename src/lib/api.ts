@@ -17,6 +17,8 @@ export async function isTokenValid(token: any): Promise<boolean> {
     return response.status === 200;
 }
 
+export type KeyResultType = "number" | "boolean" | "currency";
+
 export interface Goal {
     id: string,
     prettyId: string,
@@ -24,7 +26,18 @@ export interface Goal {
     color: string,
     description: string,
     dueDate: string,
-    percentCompleted: number
+    percentCompleted: number,
+    keyResults: KeyResult[]
+}
+
+export interface KeyResult {
+    id: string,
+    name: string,
+    type: KeyResultType,
+    startSteps: number,
+    currentSteps: number,
+    endSteps: number,
+    unit: string | null
 }
 
 export interface Team {
@@ -91,6 +104,30 @@ export async function getGoals(token: string, teamId: string): Promise<Goal[]> {
     const data = JSON.parse(await resp.text());
     
     for (const goal of data.goals) {
+        const keyResults: KeyResult[] = [];
+        if (goal.key_result_count !== 0) {
+            const detailedResp = await fetch(
+                `https://api.clickup.com/api/v2/goal/${goal.id}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        "Authorization": token
+                    }
+                }
+            );
+            const detailedData = JSON.parse(await detailedResp.text());
+            for (const keyResult of detailedData.goal.key_results) {
+                keyResults.push({
+                    id: keyResult.id,
+                    name: keyResult.name,
+                    type: keyResult.type,
+                    startSteps: keyResult.steps_start,
+                    currentSteps: keyResult.steps_current,
+                    endSteps: keyResult.steps_end,
+                    unit: keyResult.unit
+                });
+            }
+        }
         const final: Goal = {
             id: goal.id,
             prettyId: goal.pretty_id,
@@ -99,6 +136,7 @@ export async function getGoals(token: string, teamId: string): Promise<Goal[]> {
             color: goal.color,
             dueDate: goal.due_date,
             percentCompleted: goal.percent_completed,
+            keyResults: keyResults
         };
         goals.push(final);
     }
