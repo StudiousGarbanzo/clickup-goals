@@ -52,7 +52,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                         message.keyResultId,
                         message.currentSteps
                     ).then((thing) => {
-                        vscode.window.showInformationMessage(thing); // DEBUG
+                        // vscode.window.showInformationMessage(thing); // DEBUG
                         this.reloadAll();
                     });
                     return;
