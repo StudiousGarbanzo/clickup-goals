@@ -3,6 +3,7 @@ import * as path from 'path';
 import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal, updateKeyResult } from './lib/api';
 import { timestampToString } from './lib/date';
 import { createGoalView, createTargetView } from './extension';
+import { VscodeCollapsible } from '@bendera/vscode-webview-elements';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -230,7 +231,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     <br>
                     <button class="logout-button">Logout</button>
                     <script src="${js}"></script>
-                    <script src="${assetUri('node_modules/@bendera/vscode-webview-elements/dist/bundled.js')}" type="module"></script>
+                    <script src="${webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'bundled.js'))}" type="module"></script>
                 </body>
             </html>
         `;
