@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { isTokenValid, getTeams, Team, getGoals, Goal, updateGoal, updateKeyResult } from './lib/api';
 import { timestampToString } from './lib/date';
-import { createGoalView } from './extension';
+import { createGoalView, createTargetView } from './extension';
 
 export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'clickup-goals-view';
@@ -62,6 +62,9 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                     return;
                 case 'newgoal':
                     createGoalView();
+                    return;
+                case 'newtarget':
+                    createTargetView(message.goalId, message.goalName);
                     return;
               }
             },
@@ -177,6 +180,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                             <br>
                             ${keyResultsHtml}
                             <br>
+                            <button id="TARGET-${goal.id}" class="target-create-buttons" style="width:95%">Create Target</button>
                             <span>Description:</span>
                             <textarea id="DESC-${goal.id}" style="width:90%" name="w3review">${goal.description}</textarea><br>
                             <span>Color:</span>

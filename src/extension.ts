@@ -1,36 +1,97 @@
 import * as vscode from 'vscode';
-import { createGoal, getTeams, getUserId, isTokenValid } from './lib/api';
+import { createGoal, getTeams, getUserId, Goal, isTokenValid } from './lib/api';
 import { ClickUpGoalViewProvider } from './view';
 
 
-export let createGoalView: () => void = () => {};
+export let createGoalView: () => void = () => { };
+export let createTargetView: (goalId: string, goalName: string) => void = (goal) => { };
 
 export function activate(context: vscode.ExtensionContext) {
     const view = new ClickUpGoalViewProvider(context.extensionUri, context);
     const globalStateKeys: string[] = ["clickup.pat"];
 
-    let currentPanel: vscode.WebviewPanel | undefined = undefined;
+    let currentGoalPanel: vscode.WebviewPanel | undefined = undefined;
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(ClickUpGoalViewProvider.viewType, view));
     context.globalState.setKeysForSync(globalStateKeys);
+
+    createTargetView = (goalId: string, goalName: string) => {
+        const columnToShowIn = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+        const currentTargetPanel = vscode.window.createWebviewPanel('createTarget', `${goalName}: Create New Target`, columnToShowIn!, {
+            enableScripts: true
+        });
+        const styleVSCodeUri = currentTargetPanel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vscode.css'));
+        const scriptVSCodeUri = currentTargetPanel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'target.js'));
+        function reload() {
+            currentTargetPanel.webview.html = `
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <link href="${styleVSCodeUri}" rel="stylesheet">
+                    </head>
+                    <body>
+                        <br><br>
+                        <h1>${goalName}: Create New Target</h1>
+                        <br>
+                        <div style="width:95%">
+                            <br>
+                            <input type="text" id="target-name" value="Name" placeholder="Name">
+                            <br>
+                            <textarea placeholder="Description" id="target-description">Description</textarea>
+                            <br>
+                            <label for="target-type">Type</label>
+                            <select name="target-type" class="goal-team" id="target-type">
+                                <option value="number">Number</option>
+                                <option value="boolean">Boolean</option>
+                                <option value="currency">Currency</option>
+                            </select>
+                            <br>
+                            <div class="target-num-props">
+                                <label for="target-unit">Unit</label>
+                                <input type="text" id="target-unit">
+                                <br>
+                            </div>
+                            <div class="target-num-props">
+                                <label for="target-start">Starting Value</label>
+                                <input type="number" id="target-start" min="0">
+                                <br>
+                            </div>
+                            <div class="target-num-props">
+                                <label for="target-end">End Target</label>
+                                <input type="number" id="target-end" min="0">
+                                <br>
+                            </div>
+                            <input type="text" id="target-name" value="Unit" placeholder="Name">
+                            <br>
+                            <button class="create-button" style="width:97.25%">Create</button>
+                        </div>
+                        <br>
+                        <script src="${scriptVSCodeUri}"></script>
+                    </body>
+                </html>`;
+        }
+        reload();
+    };
+
     createGoalView = () => {
         const columnToShowIn = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-        if (currentPanel) {
-            currentPanel.reveal(columnToShowIn);
+        if (currentGoalPanel) {
+            currentGoalPanel.reveal(columnToShowIn);
         } else {
-            currentPanel = vscode.window.createWebviewPanel('createGoal', 'ClickUp: Create New Goal', columnToShowIn!, {
+            currentGoalPanel = vscode.window.createWebviewPanel('createGoal', 'ClickUp: Create New Goal', columnToShowIn!, {
                 enableScripts: true
             });
 
-            const styleVSCodeUri = currentPanel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vscode.css'));
-            const scriptVSCodeUri = currentPanel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'create.js'));;
+            const styleVSCodeUri = currentGoalPanel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vscode.css'));
+            const scriptVSCodeUri = currentGoalPanel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'create.js'));
 
             function reload() {
                 isTokenValid(context.globalState.get("clickup.pat")).then(valid => {
-                    if (!currentPanel) {
+                    if (!currentGoalPanel) {
                         return;
                     }
                     if (!valid) {
-                        currentPanel.webview.html = `
+                        currentGoalPanel.webview.html = `
                         <!DOCTYPE html>
                         <html lang="en">
                             <head>
@@ -45,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
                         `;
                     } else {
                         getTeams(context.globalState.get("clickup.pat")).then((teams) => {
-                            if (!currentPanel) {
+                            if (!currentGoalPanel) {
                                 return;
                             }
                             let teamOptionsHtml = "";
@@ -54,7 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
                                 teamOptionsHtml += `<option value="${team.id}">${team.name}</option>\n`;
                             }
                             teamOptionsHtml += `</select>\n`;
-                            currentPanel.webview.html = `
+                            currentGoalPanel.webview.html = `
                     <!DOCTYPE html>
                     <html lang="en">
                         <head>
@@ -92,7 +153,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
             reload();
 
-            currentPanel.webview.onDidReceiveMessage(message => {
+            currentGoalPanel.webview.onDidReceiveMessage(message => {
                 const token = context.globalState.get("clickup.pat");
                 switch (message.command) {
                     case "create":
@@ -107,7 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
                                 message.color
                             ).then(() => {
                                 view.reloadAll();
-                                currentPanel!.webview.html = `
+                                currentGoalPanel!.webview.html = `
                                 <!DOCTYPE html>
                     <html lang="en">
                         <head>
@@ -125,9 +186,9 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             });
 
-            currentPanel.onDidDispose(
+            currentGoalPanel.onDidDispose(
                 () => {
-                    currentPanel = undefined;
+                    currentGoalPanel = undefined;
                 },
                 null,
                 context.subscriptions
