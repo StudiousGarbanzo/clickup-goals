@@ -181,6 +181,7 @@ export class ClickUpGoalViewProvider implements vscode.WebviewViewProvider {
                             ${keyResultsHtml}
                             <br>
                             <button id="TARGET-${goal.id}" class="target-create-buttons" style="width:95%">Create Target</button>
+                            <br>
                             <span>Description:</span>
                             <textarea id="DESC-${goal.id}" style="width:90%" name="w3review">${goal.description}</textarea><br>
                             <span>Color:</span>

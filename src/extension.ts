@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createGoal, getTeams, getUserId, Goal, isTokenValid } from './lib/api';
+import { createGoal, createTarget, getTeams, getUserId, Goal, isTokenValid } from './lib/api';
 import { ClickUpGoalViewProvider } from './view';
 
 
@@ -61,7 +61,6 @@ export function activate(context: vscode.ExtensionContext) {
                                 <input type="number" id="target-end" min="0">
                                 <br>
                             </div>
-                            <input type="text" id="target-name" value="Unit" placeholder="Name">
                             <br>
                             <button class="create-button" style="width:97.25%">Create</button>
                         </div>
@@ -71,6 +70,39 @@ export function activate(context: vscode.ExtensionContext) {
                 </html>`;
         }
         reload();
+
+        currentTargetPanel.webview.onDidReceiveMessage(message => {
+            if (message.command === "create") {
+                const token = context.globalState.get("clickup.pat");
+                getUserId(token).then(userId => {
+                    createTarget(
+                        token,
+                        goalId,
+                        message.name,
+                        message.desc,
+                        userId,
+                        message.unit,
+                        message.targetType,
+                        message.start,
+                        message.end
+                    ).then(() => {
+                        view.reloadAll();
+                        currentTargetPanel.webview.html = `
+                        <!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="${styleVSCodeUri}" rel="stylesheet">
+                </head>
+                <body>
+                    <br><br>
+                    <h1>Success</h1>
+                </body>
+            </html>`;
+                    });
+                });
+            }
+        });
     };
 
     createGoalView = () => {

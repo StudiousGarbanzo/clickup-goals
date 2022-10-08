@@ -192,3 +192,24 @@ export async function createGoal(token:any, teamId: string, name: string, dueDat
         })
     });
 }
+
+export async function createTarget(token: any, goalId: string, name: string, desc: string, userId: number, unit: string, type: string, start: number, end: number) {
+    let headersList = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    };
+    await fetch(`https://api.clickup.com/api/v2/goal/${goalId}/key_result`, {
+        method: "POST",
+        headers: headersList,
+        body: JSON.stringify({
+            name: name,
+            owners: [userId],
+            type: type,
+            steps_start: start,
+            steps_end: end,
+            unit: unit,
+            task_ids: [],
+            list_ids: []
+        })
+    });
+}
