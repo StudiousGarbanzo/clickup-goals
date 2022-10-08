@@ -60,4 +60,17 @@
             });
         });
     }
+
+    const keyResultCreateButtons = document.querySelectorAll(".target-create-buttons");
+    for (let keyResultCreateButton of keyResultCreateButtons) {
+        keyResultCreateButton.addEventListener('click', () => {
+            const goalId = keyResultCreateButton.id.substring(7);
+            const goalName = document.getElementById(`NAME-${goalId}`).value;
+            vscode.postMessage({
+                command: 'newtarget',
+                goalName: goalName,
+                goalId: goalId
+            });
+        })
+    }
 }());
