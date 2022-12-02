@@ -17,6 +17,8 @@ export async function isTokenValid(token: any): Promise<boolean> {
     return response.status === 200;
 }
 
+export type KeyResultType = "number" | "boolean" | "currency";
+
 export interface Goal {
     id: string,
     prettyId: string,
@@ -24,12 +26,40 @@ export interface Goal {
     color: string,
     description: string,
     dueDate: string,
-    percentCompleted: number
+    percentCompleted: number,
+    keyResults: KeyResult[]
+}
+
+export interface KeyResult {
+    id: string,
+    name: string,
+    type: KeyResultType,
+    startSteps: number,
+    currentSteps: number,
+    endSteps: number,
+    unit: string | null
 }
 
 export interface Team {
     id: string,
     name: string,
+}
+
+export async function updateKeyResult(token: any, keyResultId: string, steps: number): Promise<string> {
+    let headersList = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    };
+    const bodyJson = JSON.stringify({
+        steps_current: steps,
+        note: "Update steps"
+    });
+    const resp = await fetch(`https://api.clickup.com/api/v2/key_result/${keyResultId}`, {
+        method: "PUT",
+        headers: headersList,
+        body: bodyJson
+    });
+    return `${await resp.text()} LOL ${bodyJson} LOL ${resp.status}`;
 }
 
 export async function updateGoal(token: any, goalId: string, name: string, desc: string, color: string, date: number): Promise<string> {
@@ -72,7 +102,6 @@ export async function getTeams(token: any): Promise<Team[]> {
         });
     }
 
-    // TODO
     return teams;
 }
 
@@ -92,6 +121,30 @@ export async function getGoals(token: string, teamId: string): Promise<Goal[]> {
     const data = JSON.parse(await resp.text());
     
     for (const goal of data.goals) {
+        const keyResults: KeyResult[] = [];
+        if (goal.key_result_count !== 0) {
+            const detailedResp = await fetch(
+                `https://api.clickup.com/api/v2/goal/${goal.id}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        "Authorization": token
+                    }
+                }
+            );
+            const detailedData = JSON.parse(await detailedResp.text());
+            for (const keyResult of detailedData.goal.key_results) {
+                keyResults.push({
+                    id: keyResult.id,
+                    name: keyResult.name,
+                    type: keyResult.type,
+                    startSteps: keyResult.steps_start,
+                    currentSteps: keyResult.steps_current,
+                    endSteps: keyResult.steps_end,
+                    unit: keyResult.unit
+                });
+            }
+        }
         const final: Goal = {
             id: goal.id,
             prettyId: goal.pretty_id,
@@ -100,12 +153,63 @@ export async function getGoals(token: string, teamId: string): Promise<Goal[]> {
             color: goal.color,
             dueDate: goal.due_date,
             percentCompleted: goal.percent_completed,
+            keyResults: keyResults
         };
         goals.push(final);
     }
     return goals;
 }
 
-export function updateColor(goalId: string, color: string) {
+export async function getUserId(token: any): Promise<number> {
+    let headersList = {
+        "Authorization": token
+    };
+    const resp = await fetch(
+        `https://api.clickup.com/api/v2/user`,
+        {
+            method: 'GET',
+            headers: headersList
+        }
+    );
+    return JSON.parse(await resp.text()).user.id;
+}
 
+export async function createGoal(token:any, teamId: string, name: string, dueDate: number, desc: string, userId: number, color: string): Promise<void> {
+    let headersList = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    };
+    await fetch(`https://api.clickup.com/api/v2/team/${teamId}/goal`, {
+        method: "POST",
+        headers: headersList,
+        body: JSON.stringify({
+            name: name,
+            due_date: dueDate,
+            description: desc,
+            multiple_owners: true,
+            owners: [userId],
+            color: color,
+        })
+    });
+}
+
+export async function createTarget(token: any, goalId: string, name: string, desc: string, userId: number, unit: string, type: string, start: number, end: number) {
+    let headersList = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    };
+    await fetch(`https://api.clickup.com/api/v2/goal/${goalId}/key_result`, {
+        method: "POST",
+        headers: headersList,
+        body: JSON.stringify({
+            name: name,
+            owners: [userId],
+            type: type,
+            steps_start: start,
+            steps_end: end,
+            unit: unit,
+            task_ids: [],
+            list_ids: []
+        })
+    });
 }

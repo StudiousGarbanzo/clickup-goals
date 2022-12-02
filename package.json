@@ -36,7 +36,7 @@
       "clickup-goals-viewcontainer": [
         {
           "id": "clickup-goals-view",
-          "name": "View",
+          "name": " ",
           "icon": "media/dep.svg",
           "type": "webview"
         }
